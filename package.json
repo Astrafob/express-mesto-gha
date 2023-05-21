@@ -1,0 +1,13 @@
+{
+  "name": "express-mesto-gha",
+  "version": "1.0.0",
+  "description": "backend for project Mesto",
+  "main": "app.js",
+  "scripts": {
+    "lint": "npx eslint .",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "author": "Oleg Vinogradov",
+  "license": "ISC"
+}
