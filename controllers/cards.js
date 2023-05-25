@@ -21,9 +21,9 @@ const createCards = (req, res) => {
 };
 
 const deleteCards = (req, res) => {
-  const { id } = req.params;
+  const { cardId } = req.params;
 
-  Card.findByIdAndDelete(id)
+  Card.findByIdAndDelete(cardId)
     .orFail()
     .then((card) => {
       res.send(card);
@@ -32,7 +32,7 @@ const deleteCards = (req, res) => {
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'invalid data to delete card' });
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: `${id} is not found` });
+        return res.status(404).send({ message: `${cardId} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -40,10 +40,10 @@ const deleteCards = (req, res) => {
 
 const likeCard = (req, res) => {
   const owner = req.user._id;
-  const { id } = req.params.id;
+  const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
-    id,
+    cardId,
     { $addToSet: { likes: owner } },
     { new: true },
   )
@@ -54,7 +54,7 @@ const likeCard = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to add likeCard' });
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: `${owner} is not found` });
+        return res.status(404).send({ message: `${cardId} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -62,10 +62,10 @@ const likeCard = (req, res) => {
 
 const dislikeCard = (req, res) => {
   const owner = req.user._id;
-  const { id } = req.params.id;
+  const { cardId } = req.params.cardId;
 
   Card.findByIdAndDelete(
-    id,
+    cardId,
     { $pull: { likes: owner } },
     { new: true },
   )
@@ -76,7 +76,7 @@ const dislikeCard = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to delete likeCard ' });
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: `${owner} is not found` });
+        return res.status(404).send({ message: `${cardId} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
