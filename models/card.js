@@ -1,4 +1,5 @@
 /* eslint-disable linebreak-style */
+const validator = require('validator');
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
@@ -10,23 +11,26 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    required: [true, 'Поле "name" должно быть заполнено'],
+    required: [true, 'Поле "link" должно быть заполнено'],
+    validate: {
+      validator: (v) => validator.isURL(v),
+      message: 'Некорректный URL',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: [true, 'Поле "name" должно быть заполнено'],
+    required: true,
     ref: 'user',
   },
   likes: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    default: [],
   },
   createdAt: {
     type: Date,
-    required: [true, 'Поле "name" должно быть заполнено'],
+    required: true,
     default: new Date(),
   },
-});
+}, { versionKey: false });
 
 module.exports = mongoose.model('card', cardSchema);
