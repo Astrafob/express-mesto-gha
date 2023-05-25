@@ -1,4 +1,7 @@
 const Card = require('../models/card');
+const BadRequestError = require('../utils/error/400');
+const NotFoundError = require('../utils/error/404');
+const InternalServerError = require('../utils/error/500');
 
 const getCards = (req, res) => {
   Card.find({})
@@ -14,9 +17,9 @@ const createCards = (req, res) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'invalid data to create card' });
+        return res.status(BadRequestError).send({ message: 'invalid data to create card' });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(InternalServerError).send({ message: err.message });
     });
 };
 
@@ -30,11 +33,11 @@ const deleteCards = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'invalid data to delete card' });
+        return res.status(BadRequestError).send({ message: 'invalid data to delete card' });
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: `${cardId} is not found` });
+        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(InternalServerError).send({ message: err.message });
     });
 };
 
@@ -49,15 +52,15 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: `${cardId} is not found` });
+        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'invalid data to add likeCard' });
+        return res.status(BadRequestError).send({ message: 'invalid data to add likeCard' });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(InternalServerError).send({ message: err.message });
     });
 };
 
@@ -72,15 +75,15 @@ const dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: `${cardId} is not found` });
+        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'invalid data to delete likeCard ' });
+        return res.status(BadRequestError).send({ message: 'invalid data to delete likeCard ' });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(InternalServerError).send({ message: err.message });
     });
 };
 
