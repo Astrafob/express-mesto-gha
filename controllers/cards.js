@@ -1,12 +1,10 @@
 const Card = require('../models/card');
-const BadRequestError = require('../utils/error/400');
-const NotFoundError = require('../utils/error/404');
-const InternalServerError = require('../utils/error/500');
+const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
 
 const getCards = (req, res) => {
   Card.find({})
     .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => res.status(new InternalServerError()).send({ message: err.message }));
 };
 
 const createCards = (req, res) => {
