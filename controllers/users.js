@@ -12,14 +12,13 @@ const getUserById = (req, res) => {
   User.findById(id)
     .orFail()
     .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: `UserId: ${id} is not found` });
-      }
-      return res.send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'invalid data to get user' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${id} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -47,6 +46,8 @@ const updateUsers = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to update dataUser' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${owner} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -61,6 +62,8 @@ const updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to update avatarUser' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${owner} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });

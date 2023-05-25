@@ -26,14 +26,13 @@ const deleteCards = (req, res) => {
   Card.findByIdAndDelete(id)
     .orFail()
     .then((card) => {
-      if (!card) {
-        return res.status(404).send({ message: `${id} is not found` });
-      }
-      return res.send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'invalid data to delete card' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${id} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -48,14 +47,13 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        return res.status(404).send({ message: `${owner} is not found` });
-      }
-      return res.send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to add likeCard' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${owner} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -70,14 +68,13 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        return res.status(404).send({ message: `${owner} is not found` });
-      }
-      return res.send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(400).send({ message: 'invalid data to delete likeCard ' });
+      } if (err.name === 'DocumentNotFoundError') {
+        return res.status(404).send({ message: `${owner} is not found` });
       }
       return res.status(500).send({ message: err.message });
     });
