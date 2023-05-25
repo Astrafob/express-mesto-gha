@@ -40,9 +40,10 @@ const deleteCards = (req, res) => {
 
 const likeCard = (req, res) => {
   const owner = req.user._id;
+  const { id } = req.params.id;
 
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    id,
     { $addToSet: { likes: owner } },
     { new: true },
   )
@@ -61,9 +62,10 @@ const likeCard = (req, res) => {
 
 const dislikeCard = (req, res) => {
   const owner = req.user._id;
+  const { id } = req.params.id;
 
   Card.findByIdAndDelete(
-    req.params.cardId,
+    id,
     { $pull: { likes: owner } },
     { new: true },
   )
