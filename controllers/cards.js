@@ -4,7 +4,7 @@ const { BadRequestError, NotFoundError, InternalServerError } = require('../util
 const getCards = (req, res) => {
   Card.find({})
     .then((card) => res.send(card))
-    .catch((err) => res.status(new InternalServerError()).send({ message: err.message }));
+    .catch((err) => res.status(InternalServerError).send({ message: err.message }));
 };
 
 const createCards = (req, res) => {
