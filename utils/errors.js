@@ -1,9 +1,13 @@
-const BadRequestError = 400;
-const NotFoundError = 404;
-const InternalServerError = 500;
+const NotFoundError = require('./NotFoundError');
+const UnauthorizedError = require('./UnauthorizedError');
+const ForbiddenError = require('./ForbiddenError');
+const BadRequestError = require('./BadRequestError');
+const ConflictError = require('./ConflictError');
 
 module.exports = {
-  BadRequestError,
   NotFoundError,
-  InternalServerError,
+  UnauthorizedError,
+  ForbiddenError,
+  BadRequestError,
+  ConflictError,
 };

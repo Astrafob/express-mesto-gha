@@ -1,13 +1,13 @@
 const Card = require('../models/card');
-const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
+const { BadRequestError, NotFoundError } = require('../utils/errors');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send(card))
-    .catch((err) => res.status(InternalServerError).send({ message: err.message }));
+    .catch(next);
 };
 
-const createCards = (req, res) => {
+const createCards = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
@@ -17,11 +17,11 @@ const createCards = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(BadRequestError).send({ message: 'invalid data to create card' });
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 
-const deleteCards = (req, res) => {
+const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndDelete(cardId)
@@ -35,11 +35,11 @@ const deleteCards = (req, res) => {
       } if (err.name === 'DocumentNotFoundError') {
         return res.status(NotFoundError).send({ message: `${cardId} is not found` });
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const owner = req.user._id;
   const { cardId } = req.params;
 
@@ -58,11 +58,11 @@ const likeCard = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(BadRequestError).send({ message: 'invalid data to add likeCard' });
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const owner = req.user._id;
   const { cardId } = req.params;
 
@@ -81,7 +81,7 @@ const dislikeCard = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         return res.status(BadRequestError).send({ message: 'invalid data to delete likeCard ' });
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 

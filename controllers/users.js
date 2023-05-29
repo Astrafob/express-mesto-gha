@@ -1,13 +1,19 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { BadRequestError, NotFoundError, InternalServerError } = require('../utils/errors');
+const {
+  NotFoundError,
+  BadRequestError,
+  ConflictError,
+} = require('../utils/errors');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => res.status(InternalServerError).send({ message: err.message }));
+    .catch(next);
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
@@ -17,28 +23,40 @@ const getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to get user' });
+        return next(new BadRequestError('invalid data to get user'));
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(NotFoundError).send({ message: `${userId} is not found` });
+        return next(new NotFoundError(`${userId} is not found`));
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 
-const createUsers = (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
+const createUsers = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => res.status(201).send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to create user' });
+      if (err.code === 11000) {
+        return next(new ConflictError('this user already exists'));
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      if (err.name === 'ValidationError') {
+        return next(new BadRequestError('invalid data to create user'));
+      }
+      return next(err);
     });
 };
 
-const updateUsers = (req, res) => {
+const updateUsers = (req, res, next) => {
   const { name, about } = req.body;
   const owner = req.user._id;
 
@@ -46,15 +64,15 @@ const updateUsers = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to update dataUser' });
+        return next(new BadRequestError('invalid data to update dataUser'));
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(NotFoundError).send({ message: `${owner} is not found` });
+        return next(new NotFoundError(`${owner} is not found`));
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const owner = req.user._id;
 
@@ -62,12 +80,33 @@ const updateAvatar = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to update avatarUser' });
+        return next(new BadRequestError('invalid data to update avatarUser'));
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(NotFoundError).send({ message: `${owner} is not found` });
+        return next(new NotFoundError(`${owner} is not found`));
       }
-      return res.status(InternalServerError).send({ message: err.message });
+      return next(err);
     });
+};
+
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'af04bb295e7cd2425af9c549e31f0ed48417863bf167aced7684d7cd55879a28',
+        { expiresIn: '7d' },
+      );
+      res.cookie(
+        'jwt',
+        token,
+        { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true },
+      );
+
+      return res.send({ token });
+    })
+    .catch(next);
 };
 
 module.exports = {
@@ -76,4 +115,5 @@ module.exports = {
   createUsers,
   updateUsers,
   updateAvatar,
+  login,
 };
