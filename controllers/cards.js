@@ -25,7 +25,7 @@ const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
   const owner = req.user._id;
 
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .orFail()
     .then((card) => {
       if (!card) {
@@ -34,10 +34,10 @@ const deleteCards = (req, res, next) => {
       if (card.owner.toString() !== owner) {
         throw new ForbiddenError('not enough rights');
       }
-      return card;
-    })
-    .then((card) => {
-      Card.deleteOne(card);
+      return card.deleteOne()
+        .then((cardData) => {
+          res.send({ data: cardData });
+        });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
