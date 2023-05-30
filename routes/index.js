@@ -3,10 +3,11 @@ const userRouter = require('./users');
 const cardRouter = require('./cards');
 const { NotFoundError } = require('../utils/errors');
 const { createUsers, login } = require('../controllers/users');
+const { validateDataForCreateUser, validateDataforAuthorize } = require('../middlewares/validationRequest');
 const auth = require('../middlewares/auth');
 
-router.post('/signup', createUsers);
-router.post('/signin', login);
+router.post('/signup', validateDataForCreateUser, createUsers);
+router.post('/signin', validateDataforAuthorize, login);
 
 router.use('/users', auth, userRouter);
 router.use('/cards', auth, cardRouter);
