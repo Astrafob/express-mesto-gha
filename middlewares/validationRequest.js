@@ -42,14 +42,14 @@ const validateNewAvatarUser = celebrate({
 
 const validateDataCreateCard = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().required().min(2).max(30),
     link: Joi.string().regex(urlPattern),
   }),
 });
 
 const validateDataIdCard = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().regex(idPattern),
+    cardId: Joi.string().required().regex(idPattern),
   }),
 });
 
