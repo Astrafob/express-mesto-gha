@@ -52,27 +52,25 @@ const createUsers = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10)
-    .then((hash) => {
-      User.create({
-        name, about, avatar, email, password: hash,
-      })
-        .then((user) => res.status(201).send({
-          name: user.name,
-          about: user.about,
-          avatar: user.avatar,
-          email: user.email,
-        }))
-        .catch((err) => {
-          if (err.code === 11000) {
-            return next(new ConflictError('this user already exists'));
-          }
-          if (err.name === 'ValidationError') {
-            return next(new BadRequestError('invalid data to create user'));
-          }
-          return next(err);
-        });
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => {
+      res.send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        return next(new BadRequestError('invalid data to update dataUser'));
+      } if (err.code === 11000) {
+        return next(new ConflictError('this user already exists'));
+      }
+      return next(err);
+    });
 };
 
 const updateUsers = (req, res, next) => {

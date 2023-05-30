@@ -1,5 +1,5 @@
 const Card = require('../models/card');
-const { BadRequestError, NotFoundError } = require('../utils/errors');
+const { BadRequestError, NotFoundError, ForbiddenError } = require('../utils/errors');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -15,7 +15,7 @@ const createCards = (req, res, next) => {
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to create card' });
+        return next(new BadRequestError('invalid data to create card'));
       }
       return next(err);
     });
@@ -23,11 +23,21 @@ const createCards = (req, res, next) => {
 
 const deleteCards = (req, res, next) => {
   const { cardId } = req.params;
+  const owner = req.user._id;
 
   Card.findByIdAndDelete(cardId)
     .orFail()
     .then((card) => {
-      res.send(card);
+      if (!card) {
+        throw new NotFoundError('card is not found');
+      }
+      if (card.owner.toString() !== owner) {
+        throw new ForbiddenError('not enough rights');
+      }
+      return card;
+    })
+    .then((card) => {
+      Card.deleteOne(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
