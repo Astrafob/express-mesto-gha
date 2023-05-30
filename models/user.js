@@ -2,6 +2,7 @@
 const validator = require('validator');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { UnauthorizedError } = require('../utils/errors');
 
 const userSchema = new mongoose.Schema(
   {
@@ -37,23 +38,23 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Поле "password" должно быть заполнено'],
-      minlength: [2, 'Минимальная длина поля "password" - 8'],
+      select: false,
     },
   },
   { versionKey: false },
 );
 
 userSchema.statics.findUserByCredentials = function _(email, password) {
-  return this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('wrong email or password'));
+        return Promise.reject(new UnauthorizedError('wrong email or password'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('wrong email or password'));
+            return Promise.reject(new UnauthorizedError('wrong email or password'));
           }
 
           return user;

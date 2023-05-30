@@ -13,6 +13,22 @@ const getUsers = (req, res, next) => {
     .catch(next);
 };
 
+const getUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(() => {
+      next(new NotFoundError('user is not found'));
+    })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return next(new BadRequestError('invalid data to get user'));
+      } if (err.name === 'DocumentNotFoundError') {
+        return next(new NotFoundError('user is not found'));
+      }
+      return next(err);
+    });
+};
+
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
@@ -36,24 +52,27 @@ const createUsers = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
-    }))
-    .then((user) => res.status(201).send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      email: user.email,
-    }))
-    .catch((err) => {
-      if (err.code === 11000) {
-        return next(new ConflictError('this user already exists'));
-      }
-      if (err.name === 'ValidationError') {
-        return next(new BadRequestError('invalid data to create user'));
-      }
-      return next(err);
-    });
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      })
+        .then((user) => res.status(201).send({
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+        }))
+        .catch((err) => {
+          if (err.code === 11000) {
+            return next(new ConflictError('this user already exists'));
+          }
+          if (err.name === 'ValidationError') {
+            return next(new BadRequestError('invalid data to create user'));
+          }
+          return next(err);
+        });
+    })
+    .catch(next);
 };
 
 const updateUsers = (req, res, next) => {
@@ -110,6 +129,7 @@ const login = (req, res, next) => {
 
 module.exports = {
   getUsers,
+  getUser,
   getUserById,
   createUsers,
   updateUsers,
