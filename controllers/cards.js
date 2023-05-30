@@ -62,7 +62,7 @@ const likeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return next(new BadRequestError('invalid data to add likeCard'));
       }
       return next(err);
