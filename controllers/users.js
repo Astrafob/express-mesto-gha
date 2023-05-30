@@ -19,14 +19,7 @@ const getUser = (req, res, next) => {
       next(new NotFoundError('user is not found'));
     })
     .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return next(new BadRequestError('invalid data to get user'));
-      } if (err.name === 'DocumentNotFoundError') {
-        return next(new NotFoundError('user is not found'));
-      }
-      return next(err);
-    });
+    .catch(next);
 };
 
 const getUserById = (req, res, next) => {
@@ -64,7 +57,7 @@ const createUsers = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         return next(new BadRequestError('invalid data to update dataUser'));
       } if (err.code === 11000) {
         return next(new ConflictError('this user already exists'));

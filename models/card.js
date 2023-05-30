@@ -28,7 +28,6 @@ const cardSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    required: true,
     default: new Date(),
   },
 }, { versionKey: false });

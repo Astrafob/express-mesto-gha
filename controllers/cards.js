@@ -14,7 +14,7 @@ const createCards = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         return next(new BadRequestError('invalid data to create card'));
       }
       return next(err);
@@ -28,9 +28,6 @@ const deleteCards = (req, res, next) => {
   Card.findById(cardId)
     .orFail()
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('card is not found');
-      }
       if (card.owner.toString() !== owner) {
         throw new ForbiddenError('not enough rights');
       }
@@ -65,7 +62,7 @@ const likeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         return next(new BadRequestError('invalid data to add likeCard'));
       }
       return next(err);
@@ -88,7 +85,7 @@ const dislikeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return next(new BadRequestError('invalid data to add likeCard'));
       }
       return next(err);
