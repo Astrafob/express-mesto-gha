@@ -41,9 +41,9 @@ const deleteCards = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to delete card' });
+        return next(new BadRequestError('invalid data to delete card'));
       } if (err.name === 'DocumentNotFoundError') {
-        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
+        return next(new NotFoundError(`${cardId} is not found`));
       }
       return next(err);
     });
@@ -60,13 +60,13 @@ const likeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
+        throw new NotFoundError('card is not found');
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to add likeCard' });
+        return next(new BadRequestError('invalid data to add likeCard'));
       }
       return next(err);
     });
@@ -83,13 +83,13 @@ const dislikeCard = (req, res, next) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(NotFoundError).send({ message: `${cardId} is not found` });
+        throw new NotFoundError('card is not found');
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        return res.status(BadRequestError).send({ message: 'invalid data to delete likeCard ' });
+        return next(new BadRequestError('invalid data to add likeCard'));
       }
       return next(err);
     });
